@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+*.pdf
+PLAN.md
+
 # Compiled Object files
 *.slo
 *.lo
