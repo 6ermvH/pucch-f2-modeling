@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+.cache/*
+compile_commands.json
+
 build/*
 
 *.pdf
