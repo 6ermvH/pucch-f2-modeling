@@ -17,11 +17,9 @@ BlerResult simulate(int n_bits, double snr_db, int iterations, uint64_t seed) {
     int failed = 0;
 
     for (int iter = 0; iter < iterations; ++iter) {
-        // Генерация случайных данных
         Bits data(n_bits);
         for (auto& b : data) b = static_cast<uint8_t>(bit_dist(rng));
 
-        // Кодирование → модуляция → канал → демодуляция → декодирование
         Bits    codeword = encode(data, n_bits);
         Symbols tx       = modulate(codeword);
         Symbols rx       = add_noise(tx, snr_db, rng);
@@ -36,4 +34,4 @@ BlerResult simulate(int n_bits, double snr_db, int iterations, uint64_t seed) {
     return {success, failed, bler};
 }
 
-} // namespace pucch
+}

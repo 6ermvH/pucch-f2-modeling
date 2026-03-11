@@ -15,7 +15,6 @@ struct BenchResult {
     double      ops_per_sec;
 };
 
-// Запускает decode() на фиксированных LLR в течение duration_sec секунд.
 static BenchResult run(int n_bits, double duration_sec) {
     std::mt19937 rng(42);
     std::uniform_real_distribution<double> dist(-3.0, 3.0);
@@ -23,7 +22,6 @@ static BenchResult run(int n_bits, double duration_sec) {
     LLRs llrs(20);
     for (auto& x : llrs) x = dist(rng);
 
-    // Прогрев: даём кешу таблицы построиться до начала замера.
     decode(llrs, n_bits);
 
     long long count   = 0;
@@ -32,7 +30,6 @@ static BenchResult run(int n_bits, double duration_sec) {
                              std::chrono::duration<double>(duration_sec));
 
     while (Clock::now() < deadline) {
-        // volatile предотвращает выбрасывание вызова оптимизатором.
         [[maybe_unused]] volatile auto _ = decode(llrs, n_bits);
         ++count;
     }

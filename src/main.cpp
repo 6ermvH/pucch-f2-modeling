@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
             pucch::Bits bits = pucch::decode(llrs, in.n_bits);
             pucch::write_result_decoding(in.n_bits, bits);
 
-        } else { // "channel simulation"
+        } else {
             pucch::BlerResult result =
                 pucch::simulate(in.n_bits, in.snr_db, in.iterations);
             pucch::write_result_simulation(in.n_bits, result);

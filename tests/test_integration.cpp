@@ -15,8 +15,6 @@
 
 using namespace pucch;
 
-// ── parse_complex / format_complex ────────────────────────────────────────────
-
 TEST(JsonIo, ParseComplexPositiveIm) {
     auto c = parse_complex("0.536+0.357j");
     EXPECT_NEAR(c.real(),  0.536, 1e-9);
@@ -50,8 +48,8 @@ TEST(JsonIo, ParseComplexRoundTrip) {
 }
 
 TEST(JsonIo, ParseComplexInvalidThrows) {
-    EXPECT_THROW(parse_complex("1.0+0.5"),  std::runtime_error); // нет 'j'
-    EXPECT_THROW(parse_complex("1.0j"),     std::runtime_error); // нет разделителя
+    EXPECT_THROW(parse_complex("1.0+0.5"),  std::runtime_error);
+    EXPECT_THROW(parse_complex("1.0j"),     std::runtime_error);
     EXPECT_THROW(parse_complex(""),         std::runtime_error);
 }
 
@@ -64,11 +62,8 @@ TEST(JsonIo, FormatComplexPositiveIm) {
 TEST(JsonIo, FormatComplexNegativeIm) {
     std::string s = format_complex({0.5, -0.3});
     EXPECT_EQ(s.back(), 'j');
-    // знак минус должен быть где-то после первого символа
     EXPECT_NE(s.rfind('-'), std::string::npos);
 }
-
-// ── Вспомогательная функция: write/read JSON через tmp-файл ───────────────────
 
 static const std::string TMP_IN  = "/tmp/pucch_test_input.json";
 static const std::string TMP_OUT = "/tmp/pucch_test_result.json";
@@ -77,8 +72,6 @@ static void write_tmp(const std::string& content) {
     std::ofstream f(TMP_IN);
     f << content;
 }
-
-// ── parse_input: корректные входные данные ────────────────────────────────────
 
 TEST(JsonIo, ParseCodingMode) {
     write_tmp(R"({"mode":"coding","num_of_pucch_f2_bits":4,"pucch_f2_bits":[1,0,1,1]})");
@@ -89,7 +82,6 @@ TEST(JsonIo, ParseCodingMode) {
 }
 
 TEST(JsonIo, ParseDecodingMode) {
-    // 10 символов
     std::string symbols = "";
     for (int i = 0; i < 10; ++i) {
         if (i > 0) symbols += ",";
@@ -110,8 +102,6 @@ TEST(JsonIo, ParseChannelSimulationMode) {
     EXPECT_DOUBLE_EQ(in.snr_db, 5.0);
     EXPECT_EQ(in.iterations, 100);
 }
-
-// ── parse_input: ошибочные входные данные ────────────────────────────────────
 
 TEST(JsonIo, ErrorOnUnknownMode) {
     write_tmp(R"({"mode":"unknown","num_of_pucch_f2_bits":2})");
@@ -148,9 +138,6 @@ TEST(JsonIo, ErrorOnZeroIterations) {
     EXPECT_THROW(parse_input(TMP_IN), std::runtime_error);
 }
 
-// ── Полный пайплайн ───────────────────────────────────────────────────────────
-
-// При высоком SNR полный пайплайн восстанавливает исходные биты.
 TEST(Integration, FullPipelineHighSNR) {
     for (int n : {2, 4, 6, 8, 11}) {
         Bits data(n);
@@ -159,7 +146,6 @@ TEST(Integration, FullPipelineHighSNR) {
         Bits    cw      = encode(data, n);
         Symbols tx      = modulate(cw);
 
-        // Имитируем канал с SNR=30 dB
         std::mt19937 rng(0);
         Symbols rx  = pucch::add_noise(tx, 30.0, rng);
         LLRs    llrs = demodulate(rx);
@@ -169,7 +155,6 @@ TEST(Integration, FullPipelineHighSNR) {
     }
 }
 
-// Coding mode: write_result_coding → parse_complex round-trip.
 TEST(Integration, CodingResultParseable) {
     Bits cw(20, 0);
     for (int i = 0; i < 20; i += 2) cw[i] = 1;
@@ -177,7 +162,6 @@ TEST(Integration, CodingResultParseable) {
 
     write_result_coding(sym, TMP_OUT);
 
-    // Читаем обратно и проверяем
     std::ifstream f(TMP_OUT);
     ASSERT_TRUE(f.is_open());
     auto j = nlohmann::json::parse(f);
@@ -191,7 +175,6 @@ TEST(Integration, CodingResultParseable) {
     }
 }
 
-// Decoding mode: write → read → verify.
 TEST(Integration, DecodingResultRoundTrip) {
     Bits bits = {1, 0, 1, 1, 0, 0, 1, 1};
     write_result_decoding(8, bits, TMP_OUT);
@@ -203,7 +186,6 @@ TEST(Integration, DecodingResultRoundTrip) {
     EXPECT_EQ(j["pucch_f2_bits"],        bits);
 }
 
-// Simulation mode: write → read → verify fields.
 TEST(Integration, SimulationResultFields) {
     BlerResult r{900, 100, 0.1};
     write_result_simulation(11, r, TMP_OUT);

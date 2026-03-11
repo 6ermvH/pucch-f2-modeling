@@ -9,13 +9,7 @@
 
 namespace pucch {
 
-// ── Таблица предвычисленных кодовых слов ──────────────────────────────────────
-//
-// Для каждого допустимого n хранит 2^n упакованных кодовых слов.
-// Индекс в векторе совпадает с числовым значением вектора данных d:
-//   бит j вектора d = (index >> j) & 1.
-
-using CodeTable = std::vector<uint32_t>; // packed 20-bit codewords
+using CodeTable = std::vector<uint32_t>;
 
 static CodeTable build_table(int n_bits) {
     const int num = 1 << n_bits;
@@ -42,8 +36,6 @@ static const CodeTable& get_table(int n_bits) {
     if (it != cache.end()) return it->second;
     return cache.emplace(n_bits, build_table(n_bits)).first->second;
 }
-
-// ── Декодер ───────────────────────────────────────────────────────────────────
 
 Bits decode(const LLRs& llrs, int n_bits) {
     if (llrs.size() != 20) {
@@ -73,4 +65,4 @@ Bits decode(const LLRs& llrs, int n_bits) {
     return result;
 }
 
-} // namespace pucch
+}

@@ -12,8 +12,6 @@ namespace pucch {
 
 using json = nlohmann::json;
 
-// ── Вспомогательные функции ───────────────────────────────────────────────────
-
 static const std::set<int> VALID_N = {2, 4, 6, 8, 11};
 
 static void require(bool cond, const std::string& msg) {
@@ -47,16 +45,12 @@ static int get_n_bits(const json& j) {
     return n;
 }
 
-// ── Парсинг / форматирование комплексных чисел ────────────────────────────────
-
 std::complex<double> parse_complex(const std::string& s) {
     require(!s.empty() && s.back() == 'j',
             "Invalid complex format (must end with 'j'): " + s);
 
     const std::string body = s.substr(0, s.size() - 1);
 
-    // Ищем позицию знака, разделяющего Re и Im части.
-    // Пропускаем знак экспоненты (после 'e' или 'E').
     std::size_t split = std::string::npos;
     for (std::size_t i = 1; i < body.size(); ++i) {
         char c = body[i];
@@ -85,8 +79,6 @@ std::string format_complex(std::complex<double> c) {
     else                  oss << c.imag() << "j";
     return oss.str();
 }
-
-// ── parse_input ───────────────────────────────────────────────────────────────
 
 InputData parse_input(const std::string& filename) {
     const json j = read_json_file(filename);
@@ -157,8 +149,6 @@ InputData parse_input(const std::string& filename) {
     return in;
 }
 
-// ── write_result_* ────────────────────────────────────────────────────────────
-
 void write_result_coding(const Symbols& symbols, const std::string& filename) {
     json j;
     j["mode"] = "coding";
@@ -186,4 +176,4 @@ void write_result_simulation(int n_bits, const BlerResult& result,
     write_json_file(j, filename);
 }
 
-} // namespace pucch
+}
